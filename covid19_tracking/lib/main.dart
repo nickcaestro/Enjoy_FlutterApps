@@ -5,6 +5,7 @@ import 'package:covid19_tracking/ui/constants/constants.dart';
 import 'package:provider/provider.dart';
 import 'data/providers/reports.dart';
 import 'ui/screens/home/home.dart';
+import 'package:covid19_tracking/ui/screens/splash/splash.dart';
 
 void main() => runApp(App());
 
@@ -24,18 +25,10 @@ class App extends StatelessWidget {
             future: model.getdata(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Scaffold(
-                  body: Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                );
+                return SplashScreen();
               } else if (snapshot.connectionState == ConnectionState.done) {
                 if (snapshot.hasError) {
-                  return Scaffold(
-                    body: Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  );
+                  return SplashScreen();
                 } else {
                   return HomeScreen();
                 }
