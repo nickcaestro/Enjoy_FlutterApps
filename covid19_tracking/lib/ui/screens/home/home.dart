@@ -28,14 +28,14 @@ class HomeScreen extends StatelessWidget {
               ),
             ],
           ),
-          actions: <Widget>[
+          /* actions: <Widget>[
             IconButton(
               icon: Icon(Icons.search),
               onPressed: () {
                 // showSearch(context: context, delegate: Search());
               },
             )
-          ],
+          ],*/
         ),
         body: TabBarView(
           children: [
