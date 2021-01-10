@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../widgets/status_card.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../../../data/providers/reports.dart';
 
 class GlobalScreen extends StatelessWidget {
@@ -20,37 +22,49 @@ class GlobalScreen extends StatelessWidget {
           children: [
             StatusCard(
               icon: 'assets/images/icons/total.png',
-              status: model.globalCases.totalCases,
+              status: NumberFormat.compact().format(
+                double.parse(model.globalCases.totalCases),
+              ),
               label: 'Total',
               color: Colors.pink,
             ),
             StatusCard(
               icon: 'assets/images/icons/new.png',
-              status: model.globalCases.newCases,
+              status: NumberFormat.compact().format(
+                double.parse(model.globalCases.newCases),
+              ),
               label: 'New',
               color: Colors.blue,
             ),
             StatusCard(
               icon: 'assets/images/icons/active.png',
-              status: model.globalCases.activeCases,
+              status: NumberFormat.compact().format(
+                double.parse(model.globalCases.activeCases),
+              ),
               label: 'Active',
               color: Colors.teal,
             ),
             StatusCard(
               icon: 'assets/images/icons/critical.png',
-              status: model.globalCases.criticalCases,
+              status: NumberFormat.compact().format(
+                double.parse(model.globalCases.criticalCases),
+              ),
               label: 'Critical',
               color: Colors.orange,
             ),
             StatusCard(
               icon: 'assets/images/icons/recovered.png',
-              status: model.globalCases.recoveredCases,
+              status: NumberFormat.compact().format(
+                double.parse(model.globalCases.recoveredCases),
+              ),
               label: 'Recovered',
               color: Colors.green,
             ),
             StatusCard(
               icon: 'assets/images/icons/death.png',
-              status: model.globalCases.totalDeaths,
+              status: NumberFormat.compact().format(
+                double.parse(model.globalCases.totalDeaths),
+              ),
               label: 'Deaths',
               color: Colors.red,
             ),

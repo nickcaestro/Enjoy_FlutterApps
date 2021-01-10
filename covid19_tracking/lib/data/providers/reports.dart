@@ -1,43 +1,66 @@
 import 'package:flutter/foundation.dart';
 import '../models/report.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class Reports with ChangeNotifier {
-  List<Report> _reports = [
-    Report(
-      country: 'USA',
-      totalCases: '200000',
-      newCases: '30000',
-      activeCases: '100000',
-      criticalCases: '20000',
-      recoveredCases: '100000',
-      totalDeaths: '3000',
-    ),
-    Report(
-      country: 'Canada',
-      totalCases: '600000',
-      newCases: '2000',
-      activeCases: '300000',
-      criticalCases: '50000',
-      recoveredCases: '200000',
-      totalDeaths: '5000',
-    ),
-  ];
+  List<Report> _reports = [];
 
   List<Report> get reports {
     return [..._reports];
   }
 
-  Report _globalCases = Report(
-    country: 'Global',
-    totalCases: '350000',
-    newCases: '35000',
-    activeCases: '900000',
-    criticalCases: '70000',
-    recoveredCases: '300000',
-    totalDeaths: '100000',
-  );
+  Report _globalCases;
 
   Report get globalCases {
     return _globalCases;
+  }
+
+  Future getdata() async {
+    final url = 'https://covid-193.p.rapidapi.com/statistics';
+    final headers = {
+      'x-rapidapi-host': 'covid-193.p.rapidapi.com',
+      'x-rapidapi-key': '09639a19dbmsh5717dc52726815ep1b5209jsn3a2d12b9955c',
+    };
+    final response = await http.get(url, headers: headers);
+
+    final responseData = json.decode(response.body)['response'];
+
+    responseData.forEach((value) {
+      if (value['country'] == 'All') {
+        _globalCases = Report(
+          country: value['country'],
+          totalCases: value['cases']['total'].toString(),
+          newCases: value['cases']['new'].toString(),
+          activeCases: value['cases']['active'].toString(),
+          criticalCases: value['cases']['critical'].toString(),
+          recoveredCases: value['cases']['recovered'].toString(),
+          totalDeaths: value['deaths']['total'].toString(),
+        );
+      } else {
+        final report = Report(
+          country: value['country'],
+          totalCases: value['cases']['total'].toString(),
+          newCases: value['cases']['new'] == null
+              ? '0'
+              : value['cases']['new'].toString(),
+          activeCases: value['cases']['active'] == null
+              ? '0'
+              : value['cases']['active'].toString(),
+          criticalCases: value['cases']['critical'] == null
+              ? '0'
+              : value['cases']['critical'].toString(),
+          recoveredCases: value['cases']['recovered'] == null
+              ? '0'
+              : value['cases']['recovered'].toString(),
+          totalDeaths: value['cases']['total'] == null
+              ? '0'
+              : value['deaths']['total'].toString(),
+        );
+        _reports.add(report);
+      }
+    });
+    _reports.sort((a, b) => a.country.compareTo(b.country));
   }
 }
