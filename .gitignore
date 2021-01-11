@@ -15,3 +15,6 @@ covid19_tracking/android/app/release/app-release.aab
 covid19_tracking/android/app/debug/app-debug.aab
 real_estate/
 flutter_internet_streaming_radio
+car_rental/
+covid_19_live_tracker/
+flutter_internet_streaming_radio
