@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:internet_radio/pages/radio_page.dart';
 import 'package:internet_radio/utils/hex_color.dart';
 
-class HomepPage extends StatefulWidget {
+class HomePage extends StatefulWidget {
   @override
-  _HomepPageState createState() => _HomepPageState();
+  _HomePageState createState() => _HomePageState();
 }
 
-class _HomepPageState extends State<HomepPage> {
+class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
-  final List<Widget> _children = [new Text("Page 1"), new Text("Page 2")];
+  final List<Widget> _children = [new RadioPage(), new Text("Page 2")];
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,19 +37,29 @@ class _HomepPageState extends State<HomepPage> {
     );
   }
 
+  _bottomNavItem(IconData icon, String title) {
+    return BottomNavigationBarItem(
+      icon: new Icon(
+        icon,
+        color: HexColor("#6d7381"),
+      ),
+      activeIcon: new Icon(
+        icon,
+        color: HexColor("#ffffff"),
+      ),
+      title: new Text(
+        title,
+        style: TextStyle(
+          color: HexColor("#ffffff"),
+        ),
+      ),
+    );
+  }
+
   void onTabTapped(int index) {
     if (!mounted) return;
     setState(() {
       _currentIndex = index;
     });
   }
-}
-
-_bottomNavItem(IconData icon, String title) {
-  return BottomNavigationBarItem(
-    icon: new Icon(
-      icon,
-      color: HexColor("#6d7381"),
-    ),
-  );
 }
