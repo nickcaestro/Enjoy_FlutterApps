@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:internet_radio/models/radio.dart';
+import 'package:internet_radio/services/player_provider.dart';
 import 'package:internet_radio/utils/hex_color.dart';
 import 'package:provider/provider.dart';
 
@@ -24,6 +25,7 @@ class _RadioRowTemplateState extends State<RadioRowTemplate> {
   }
 
   Widget _buildSongRow() {
+    // var playerProvider = Provider.of<PlayerProvider>(context, listen: false);
     return ListTile(
       title: new Text(
         this.widget.radioModel.radioName,
@@ -74,9 +76,12 @@ class _RadioRowTemplateState extends State<RadioRowTemplate> {
   }
 
   Widget _buildPlayStopIcon() {
+    var playerProvider = Provider.of<PlayerProvider>(context, listen: false);
     return IconButton(
       icon: Icon(Icons.play_circle_filled),
-      onPressed: () {},
+      onPressed: () {
+        playerProvider.updatePlayerState(RadioPlayerState.PLAYING);
+      },
     );
   }
 

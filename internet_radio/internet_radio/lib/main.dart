@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:internet_radio/pages/home_page.dart';
+import 'package:internet_radio/pages/radio_page.dart';
+import 'package:internet_radio/services/player_provider.dart';
+import 'package:provider/provider.dart';
 
 void main() => runApp(MyApp());
 
@@ -17,13 +20,21 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(fontFamily: 'Monteserrat'),
-      home: SafeArea(
-        bottom: false,
-        child: Scaffold(
-          primary: false,
-          body: HomePage(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => PlayerProvider(),
+          child: RadioPage(),
+        ),
+      ],
+      child: MaterialApp(
+        theme: ThemeData(fontFamily: 'Monteserrat'),
+        home: SafeArea(
+          bottom: false,
+          child: Scaffold(
+            primary: false,
+            body: HomePage(),
+          ),
         ),
       ),
     );

@@ -8,7 +8,6 @@ class RadioAPIModel extends BaseModel {
     this.data,
   });
 
-  @override
   fromJson(Map<String, dynamic> json) {
     this.data = (json["Data"] as List)
         .map(
@@ -29,14 +28,15 @@ class RadioModel extends DBBaseModel {
   final String radioPic;
   final bool isBookmarked;
 
-  RadioModel(
-      {this.id,
-      this.radioName,
-      this.radioURL,
-      this.radioDesc,
-      this.radioWebsite,
-      this.radioPic,
-      this.isBookmarked});
+  RadioModel({
+    this.id,
+    this.radioName,
+    this.radioURL,
+    this.radioDesc,
+    this.radioWebsite,
+    this.radioPic,
+    this.isBookmarked,
+  });
 
   factory RadioModel.fromJson(Map<String, dynamic> json) {
     return RadioModel(

@@ -1,6 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:internet_radio/services/player_provider.dart';
 import 'package:internet_radio/utils/hex_color.dart';
+import 'package:provider/provider.dart';
 
 class NowPlayingTemplate extends StatelessWidget {
   final String radioTitle;
@@ -83,11 +84,13 @@ class NowPlayingTemplate extends StatelessWidget {
   }
 
   Widget _buildStopIcon(BuildContext context) {
-    //var playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+    var playerProvider = Provider.of<PlayerProvider>(context, listen: false);
     return IconButton(
       icon: Icon(Icons.stop),
       color: HexColor("#9097A6"),
-      onPressed: () {},
+      onPressed: () {
+        playerProvider.updatePlayerState(RadioPlayerState.STOPPED);
+      },
     );
   }
 

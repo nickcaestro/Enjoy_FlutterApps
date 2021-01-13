@@ -1,21 +1,42 @@
 import 'dart:async';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_radio/models/radio.dart';
-import 'package:internet_radio/services/db_download_service.dart';
+import 'package:internet_radio/services/player_provider.dart';
 import 'package:internet_radio/utils/hex_color.dart';
-
 import 'package:provider/provider.dart';
 
-import 'package:internet_radio/pages/now_playing_template.dart';
-import 'package:internet_radio/pages/radio_row_template.dart';
+import 'now_playing_template.dart';
+import 'radio_row_template.dart';
 
 class RadioPage extends StatefulWidget {
+  RadioPage({Key key}) : super(key: key);
+
   @override
   _RadioPageState createState() => _RadioPageState();
 }
 
 class _RadioPageState extends State<RadioPage> {
+  final _searchQuery = new TextEditingController();
+  Timer _debounce;
+
+  @override
+  void initState() {
+    super.initState();
+    var playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+    playerProvider.fetchAllRadios();
+    print('initState()============================================');
+
+    _searchQuery.addListener(() {
+      var radioProvider = Provider.of<PlayerProvider>(context, listen: false);
+      if (_debounce?.isActive ?? false) _debounce.cancel();
+      _debounce = Timer(const Duration(milliseconds: 500), () {
+        radioProvider.fetchAllRadios(searchQuery: _searchQuery.text);
+      });
+    });
+  }
+
   RadioModel radioModel = new RadioModel(
     id: 1,
     radioName: "Test Radio 1",
@@ -27,15 +48,7 @@ class _RadioPageState extends State<RadioPage> {
   Widget build(BuildContext context) {
     return Container(
       child: Column(
-        children: [
-          _appLogo(),
-          _searchBar(),
-          _radiosList(),
-          NowPlayingTemplate(
-            radioTitle: "Current Radio Playing",
-            radioImageURL: "http://isharpeners.com/sc_logo.png",
-          )
-        ],
+        children: [_appLogo(), _searchBar(), _radiosList(), _nowPlaying()],
       ),
     );
   }
@@ -80,6 +93,7 @@ class _RadioPageState extends State<RadioPage> {
                 contentPadding: EdgeInsets.all(5),
                 hintText: 'Search Radio',
               ),
+              controller: _searchQuery,
               // controller: _searchQuery, ,
             ),
           ),
@@ -89,6 +103,49 @@ class _RadioPageState extends State<RadioPage> {
     );
   }
 
+  Widget _nowPlaying() {
+    var playerProvider = Provider.of<PlayerProvider>(context, listen: true);
+
+    return Visibility(
+      visible: playerProvider.getPlayerState() == RadioPlayerState.PLAYING,
+      child: NowPlayingTemplate(
+        radioTitle: "Current Radio Playing",
+        radioImageURL: "http://isharpeners.com/sc_logo.png",
+      ),
+    );
+  }
+
+  Widget _radiosList() {
+    return Consumer<PlayerProvider>(
+      builder: (context, radioModel, child) {
+        if (radioModel.totalRecords > 0) {
+          return new Expanded(
+            child: Padding(
+              child: ListView(
+                children: <Widget>[
+                  ListView.separated(
+                      itemCount: radioModel.totalRecords,
+                      physics: ScrollPhysics(),
+                      shrinkWrap: true,
+                      itemBuilder: (context, index) {
+                        return RadioRowTemplate(
+                          radioModel: radioModel.allRadio[index],
+                        );
+                      },
+                      separatorBuilder: (context, index) {
+                        return Divider();
+                      })
+                ],
+              ),
+              padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+            ),
+          );
+        }
+        return CircularProgressIndicator();
+      },
+    );
+  }
+/*
   Widget _radiosList() {
     return new FutureBuilder(
       future: DBDownloadService.fetchLocalDB(),
@@ -118,5 +175,5 @@ class _RadioPageState extends State<RadioPage> {
         return CircularProgressIndicator();
       },
     );
-  }
+  }*/
 }
