@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:internet_radio/models/radio.dart';
 import 'package:internet_radio/utils/hex_color.dart';
+import 'package:provider/provider.dart';
 
 class RadioRowTemplate extends StatefulWidget {
   final RadioModel radioModel;

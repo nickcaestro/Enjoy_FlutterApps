@@ -1,8 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:internet_radio/models/radio.dart';
+import 'package:internet_radio/services/db_download_service.dart';
+import 'package:internet_radio/utils/hex_color.dart';
+
+import 'package:provider/provider.dart';
+
 import 'package:internet_radio/pages/now_playing_template.dart';
 import 'package:internet_radio/pages/radio_row_template.dart';
-import 'package:internet_radio/utils/hex_color.dart';
 
 class RadioPage extends StatefulWidget {
   @override
@@ -84,24 +90,33 @@ class _RadioPageState extends State<RadioPage> {
   }
 
   Widget _radiosList() {
-    return new Expanded(
-      child: Padding(
-        child: ListView(
-          children: <Widget>[
-            ListView.separated(
-                itemCount: 10,
-                physics: ScrollPhysics(),
-                shrinkWrap: true,
-                itemBuilder: (context, index) {
-                  return RadioRowTemplate(radioModel: radioModel);
-                },
-                separatorBuilder: (context, index) {
-                  return Divider();
-                })
-          ],
-        ),
-        padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
-      ),
+    return new FutureBuilder(
+      future: DBDownloadService.fetchLocalDB(),
+      builder: (BuildContext context, AsyncSnapshot<List<RadioModel>> radios) {
+        if (radios.hasData) {
+          return new Expanded(
+            child: Padding(
+              child: ListView(
+                children: <Widget>[
+                  ListView.separated(
+                      itemCount: radios.data.length,
+                      physics: ScrollPhysics(),
+                      shrinkWrap: true,
+                      itemBuilder: (context, index) {
+                        return RadioRowTemplate(radioModel: radios.data[index]);
+                      },
+                      separatorBuilder: (context, index) {
+                        return Divider();
+                      })
+                ],
+              ),
+              padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+            ),
+          );
+        }
+
+        return CircularProgressIndicator();
+      },
     );
   }
 }
