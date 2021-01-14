@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:internet_radio/pages/radio_page.dart';
+import 'package:internet_radio/pages/fav_radios_page.dart';
+
+import 'package:internet_radio/services/db_download_service.dart';
 
 import 'package:internet_radio/utils/hex_color.dart';
+
+import 'package:internet_radio/pages/radio_page.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -10,7 +14,12 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
-  final List<Widget> _children = [new RadioPage(), new Text("Page 2")];
+  final List<Widget> _children = [
+    new RadioPage(
+      isFavouriteOnly: false,
+    ),
+    FavRadiosPage(),
+  ];
 
   @override
   void initState() {

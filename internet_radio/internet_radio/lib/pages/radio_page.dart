@@ -11,7 +11,8 @@ import 'now_playing_template.dart';
 import 'radio_row_template.dart';
 
 class RadioPage extends StatefulWidget {
-  RadioPage({Key key}) : super(key: key);
+  final bool isFavouriteOnly;
+  RadioPage({Key key, this.isFavouriteOnly}) : super(key: key);
 
   @override
   _RadioPageState createState() => _RadioPageState();
@@ -25,15 +26,29 @@ class _RadioPageState extends State<RadioPage> {
   void initState() {
     super.initState();
     var playerProvider = Provider.of<PlayerProvider>(context, listen: false);
-    playerProvider.fetchAllRadios();
-    print('initState()============================================');
+    playerProvider.fetchAllRadios(isFavouriteOnly: this.widget.isFavouriteOnly);
 
+/*
     _searchQuery.addListener(() {
       var radioProvider = Provider.of<PlayerProvider>(context, listen: false);
       if (_debounce?.isActive ?? false) _debounce.cancel();
       _debounce = Timer(const Duration(milliseconds: 500), () {
         radioProvider.fetchAllRadios(searchQuery: _searchQuery.text);
       });
+    });*/
+
+    _searchQuery.addListener(_onSearchChanged);
+    print('initState()============================================');
+  }
+
+  _onSearchChanged() {
+    var radiosBloc = Provider.of<PlayerProvider>(context, listen: false);
+    if (_debounce?.isActive ?? false) _debounce.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      radiosBloc.fetchAllRadios(
+        isFavouriteOnly: this.widget.isFavouriteOnly,
+        searchQuery: _searchQuery.text,
+      );
     });
   }
 
@@ -115,6 +130,32 @@ class _RadioPageState extends State<RadioPage> {
     );
   }
 
+  Widget _noData() {
+    String noDataTxt = "";
+    bool showTextMessage = false;
+
+    if (this.widget.isFavouriteOnly ||
+        (this.widget.isFavouriteOnly && _searchQuery.text.isNotEmpty)) {
+      noDataTxt = "No Favourites";
+      showTextMessage = true;
+    } else if (_searchQuery.text.isNotEmpty) {
+      noDataTxt = "No Radio Found";
+      showTextMessage = true;
+    }
+
+    return Column(
+      children: <Widget>[
+        new Expanded(
+          child: Center(
+            child: showTextMessage
+                ? new Text(noDataTxt)
+                : CircularProgressIndicator(),
+          ),
+        )
+      ],
+    );
+  }
+
   Widget _radiosList() {
     return Consumer<PlayerProvider>(
       builder: (context, radioModel, child) {
@@ -130,6 +171,7 @@ class _RadioPageState extends State<RadioPage> {
                       itemBuilder: (context, index) {
                         return RadioRowTemplate(
                           radioModel: radioModel.allRadio[index],
+                          isFavouriteOnly: this.widget.isFavouriteOnly,
                         );
                       },
                       separatorBuilder: (context, index) {
@@ -139,6 +181,12 @@ class _RadioPageState extends State<RadioPage> {
               ),
               padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
             ),
+          );
+        }
+
+        if (radioModel.totalRecords == 0) {
+          return new Expanded(
+            child: _noData(),
           );
         }
         return CircularProgressIndicator();

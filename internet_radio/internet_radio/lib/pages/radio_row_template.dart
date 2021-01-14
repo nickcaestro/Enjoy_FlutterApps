@@ -6,8 +6,10 @@ import 'package:provider/provider.dart';
 
 class RadioRowTemplate extends StatefulWidget {
   final RadioModel radioModel;
+  final bool isFavouriteOnly;
 
-  RadioRowTemplate({Key key, this.radioModel}) : super(key: key);
+  RadioRowTemplate({Key key, this.radioModel, this.isFavouriteOnly})
+      : super(key: key);
 
   @override
   _RadioRowTemplateState createState() => _RadioRowTemplateState();
@@ -86,10 +88,19 @@ class _RadioRowTemplateState extends State<RadioRowTemplate> {
   }
 
   Widget _buildAddFavouriteIcon() {
+    var playerProvider = Provider.of<PlayerProvider>(context, listen: true);
     return IconButton(
-      icon: Icon(Icons.favorite_border),
+      icon: this.widget.radioModel.isBookmarked
+          ? Icon(Icons.favorite_border)
+          : Icon(Icons.favorite_border),
       color: HexColor("#9097A6"),
-      onPressed: () {},
+      onPressed: () {
+        playerProvider.radioBookmarked(
+          this.widget.radioModel.id,
+          this.widget.radioModel.isBookmarked,
+          isFavouriteOnly: this.widget.isFavouriteOnly,
+        );
+      },
     );
   }
 }
