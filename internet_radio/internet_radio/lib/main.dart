@@ -28,6 +28,8 @@ class _MyAppState extends State<MyApp> {
         ),
       ],
       child: MaterialApp(
+        title: '',
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(fontFamily: 'Monteserrat'),
         home: SafeArea(
           bottom: false,

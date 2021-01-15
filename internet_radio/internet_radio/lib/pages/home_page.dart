@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:internet_radio/pages/fav_radios_page.dart';
-
 import 'package:internet_radio/services/db_download_service.dart';
-
 import 'package:internet_radio/utils/hex_color.dart';
-
 import 'package:internet_radio/pages/radio_page.dart';
 
 class HomePage extends StatefulWidget {

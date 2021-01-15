@@ -21,28 +21,34 @@ class RadioPage extends StatefulWidget {
 class _RadioPageState extends State<RadioPage> {
   final _searchQuery = new TextEditingController();
   Timer _debounce;
+  AudioPlayer _audioPlayer;
 
   @override
   void initState() {
     super.initState();
     var playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+
+    playerProvider.initAudioPlugin();
+    playerProvider.resetStreams();
     playerProvider.fetchAllRadios(isFavouriteOnly: this.widget.isFavouriteOnly);
 
-/*
-    _searchQuery.addListener(() {
-      var radioProvider = Provider.of<PlayerProvider>(context, listen: false);
-      if (_debounce?.isActive ?? false) _debounce.cancel();
-      _debounce = Timer(const Duration(milliseconds: 500), () {
-        radioProvider.fetchAllRadios(searchQuery: _searchQuery.text);
-      });
-    });*/
-
     _searchQuery.addListener(_onSearchChanged);
-    print('initState()============================================');
   }
+
+  // void _initAudioPlayer() {
+  //   var audioPlayerBloc = Provider.of<PlayerProvider>(context, listen: false);
+
+  //   if (audioPlayerBloc.getPlayerState() == RadioPlayerState.STOPPED) {
+  //     _audioPlayer = new AudioPlayer();
+  //   } else {
+  //     _audioPlayer =
+  //         Provider.of<PlayerProvider>(context, listen: false).getAudioPlayer();
+  //   }
+  // }
 
   _onSearchChanged() {
     var radiosBloc = Provider.of<PlayerProvider>(context, listen: false);
+
     if (_debounce?.isActive ?? false) _debounce.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {
       radiosBloc.fetchAllRadios(
@@ -109,23 +115,10 @@ class _RadioPageState extends State<RadioPage> {
                 hintText: 'Search Radio',
               ),
               controller: _searchQuery,
-              // controller: _searchQuery, ,
             ),
           ),
           Spacer(),
         ],
-      ),
-    );
-  }
-
-  Widget _nowPlaying() {
-    var playerProvider = Provider.of<PlayerProvider>(context, listen: true);
-
-    return Visibility(
-      visible: playerProvider.getPlayerState() == RadioPlayerState.PLAYING,
-      child: NowPlayingTemplate(
-        radioTitle: "Current Radio Playing",
-        radioImageURL: "http://isharpeners.com/sc_logo.png",
       ),
     );
   }
@@ -136,7 +129,7 @@ class _RadioPageState extends State<RadioPage> {
 
     if (this.widget.isFavouriteOnly ||
         (this.widget.isFavouriteOnly && _searchQuery.text.isNotEmpty)) {
-      noDataTxt = "No Favourites";
+      noDataTxt = "No Favorites";
       showTextMessage = true;
     } else if (_searchQuery.text.isNotEmpty) {
       noDataTxt = "No Radio Found";
@@ -144,14 +137,21 @@ class _RadioPageState extends State<RadioPage> {
     }
 
     return Column(
-      children: <Widget>[
+      children: [
         new Expanded(
           child: Center(
             child: showTextMessage
-                ? new Text(noDataTxt)
+                ? new Text(
+                    noDataTxt,
+                    textScaleFactor: 1,
+                    style: TextStyle(
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  )
                 : CircularProgressIndicator(),
           ),
-        )
+        ),
       ],
     );
   }
@@ -171,7 +171,7 @@ class _RadioPageState extends State<RadioPage> {
                       itemBuilder: (context, index) {
                         return RadioRowTemplate(
                           radioModel: radioModel.allRadio[index],
-                          isFavouriteOnly: this.widget.isFavouriteOnly,
+                          isFavouriteOnlyRadios: this.widget.isFavouriteOnly,
                         );
                       },
                       separatorBuilder: (context, index) {
@@ -189,39 +189,52 @@ class _RadioPageState extends State<RadioPage> {
             child: _noData(),
           );
         }
-        return CircularProgressIndicator();
-      },
-    );
-  }
-/*
-  Widget _radiosList() {
-    return new FutureBuilder(
-      future: DBDownloadService.fetchLocalDB(),
-      builder: (BuildContext context, AsyncSnapshot<List<RadioModel>> radios) {
-        if (radios.hasData) {
-          return new Expanded(
-            child: Padding(
-              child: ListView(
-                children: <Widget>[
-                  ListView.separated(
-                      itemCount: radios.data.length,
-                      physics: ScrollPhysics(),
-                      shrinkWrap: true,
-                      itemBuilder: (context, index) {
-                        return RadioRowTemplate(radioModel: radios.data[index]);
-                      },
-                      separatorBuilder: (context, index) {
-                        return Divider();
-                      })
-                ],
-              ),
-              padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
-            ),
-          );
-        }
 
         return CircularProgressIndicator();
       },
     );
-  }*/
+  }
+
+  Widget _nowPlaying() {
+    var playerProvider = Provider.of<PlayerProvider>(context, listen: true);
+
+    return Visibility(
+      visible: playerProvider.getPlayerState() == RadioPlayerState.PLAYING,
+      child: NowPlayingTemplate(
+        radioTitle: playerProvider.currentRadio.radioName,
+        radioImageURL: playerProvider.currentRadio.radioPic,
+      ),
+    );
+  }
+
+// Widget _radiosList() {
+//   return new FutureBuilder(
+//     future: DBDownloadService.fetchLocalDB(),
+//     builder: (BuildContext context, AsyncSnapshot<List<RadioModel>> radios) {
+//       if (radios.hasData) {
+//         return new Expanded(
+//           child: Padding(
+//             child: ListView(
+//               children: <Widget>[
+//                 ListView.separated(
+//                     itemCount: radios.data.length,
+//                     physics: ScrollPhysics(),
+//                     shrinkWrap: true,
+//                     itemBuilder: (context, index) {
+//                       return RadioRowTemplate(radioModel: radios.data[index]);
+//                     },
+//                     separatorBuilder: (context, index) {
+//                       return Divider();
+//                     })
+//               ],
+//             ),
+//             padding: EdgeInsets.fromLTRB(0, 5, 0, 5),
+//           ),
+//         );
+//       }
+
+//       return CircularProgressIndicator();
+//     },
+//   );
+// }
 }

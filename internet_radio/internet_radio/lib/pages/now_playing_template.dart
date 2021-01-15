@@ -90,6 +90,7 @@ class NowPlayingTemplate extends StatelessWidget {
       color: HexColor("#9097A6"),
       onPressed: () {
         playerProvider.updatePlayerState(RadioPlayerState.STOPPED);
+        playerProvider.stopRadio();
       },
     );
   }

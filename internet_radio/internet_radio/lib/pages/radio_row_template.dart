@@ -6,10 +6,13 @@ import 'package:provider/provider.dart';
 
 class RadioRowTemplate extends StatefulWidget {
   final RadioModel radioModel;
-  final bool isFavouriteOnly;
+  final bool isFavouriteOnlyRadios;
 
-  RadioRowTemplate({Key key, this.radioModel, this.isFavouriteOnly})
-      : super(key: key);
+  RadioRowTemplate({
+    Key key,
+    this.radioModel,
+    this.isFavouriteOnlyRadios,
+  }) : super(key: key);
 
   @override
   _RadioRowTemplateState createState() => _RadioRowTemplateState();
@@ -27,7 +30,11 @@ class _RadioRowTemplateState extends State<RadioRowTemplate> {
   }
 
   Widget _buildSongRow() {
-    // var playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+    var playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+
+    final bool _isSelectedRadio =
+        this.widget.radioModel.id == playerProvider.currentRadio.id;
+
     return ListTile(
       title: new Text(
         this.widget.radioModel.radioName,
@@ -42,7 +49,7 @@ class _RadioRowTemplateState extends State<RadioRowTemplate> {
         spacing: -10.0,
         runSpacing: 0.0,
         children: <Widget>[
-          _buildPlayStopIcon(),
+          _buildPlayStopIcon(playerProvider, _isSelectedRadio),
           _buildAddFavouriteIcon(),
         ],
       ),
@@ -77,14 +84,44 @@ class _RadioRowTemplateState extends State<RadioRowTemplate> {
     );
   }
 
-  Widget _buildPlayStopIcon() {
-    var playerProvider = Provider.of<PlayerProvider>(context, listen: false);
+  Widget _buildPlayStopIcon(
+      PlayerProvider playerProvider, bool _isSelectedSong) {
     return IconButton(
-      icon: Icon(Icons.play_circle_filled),
+      icon: _buildAudioButton(playerProvider, _isSelectedSong),
       onPressed: () {
-        playerProvider.updatePlayerState(RadioPlayerState.PLAYING);
+        //playerProvider.updatePlayerState(RadioPlayerState.PLAYING);
+        if (!playerProvider.isStopped() && _isSelectedSong) {
+          playerProvider.stopRadio();
+        } else {
+          if (!playerProvider.isLoading()) {
+            playerProvider.initAudioPlayer();
+            playerProvider.setAudioPlayer(this.widget.radioModel);
+            playerProvider.playRadio();
+          }
+        }
       },
     );
+  }
+
+  Widget _buildAudioButton(PlayerProvider model, _isSelectedSong) {
+    if (_isSelectedSong) {
+      if (model.isLoading()) {
+        return Center(
+          child: CircularProgressIndicator(
+            strokeWidth: 2.0,
+          ),
+        );
+      }
+      if (!model.isStopped()) {
+        return Icon(Icons.stop);
+      }
+      if (model.isStopped()) {
+        return Icon(Icons.play_circle_filled);
+      }
+    } else {
+      return Icon(Icons.play_circle_filled);
+    }
+    return new Container();
   }
 
   Widget _buildAddFavouriteIcon() {
@@ -98,7 +135,7 @@ class _RadioRowTemplateState extends State<RadioRowTemplate> {
         playerProvider.radioBookmarked(
           this.widget.radioModel.id,
           this.widget.radioModel.isBookmarked,
-          isFavouriteOnly: this.widget.isFavouriteOnly,
+          isFavouriteOnly: this.widget.isFavouriteOnlyRadios,
         );
       },
     );

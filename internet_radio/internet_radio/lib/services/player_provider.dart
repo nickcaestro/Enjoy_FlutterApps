@@ -9,22 +9,107 @@ import 'package:internet_radio/utils/db_service.dart';
 enum RadioPlayerState { LOADING, STOPPED, PLAYING, PAUSED, COMPLETED }
 
 class PlayerProvider with ChangeNotifier {
+  AudioPlayer _audioPlayer;
+  RadioModel _radioDetails;
+
   List<RadioModel> _radiosFetcher;
   List<RadioModel> get allRadio => _radiosFetcher;
   int get totalRecords => _radiosFetcher != null ? _radiosFetcher.length : 0;
+  RadioModel get currentRadio => _radioDetails;
 
   getPlayerState() => _playerState;
+  getAudioPlayer() => _audioPlayer;
+  getCurrentRadio() => _radioDetails;
 
   RadioPlayerState _playerState = RadioPlayerState.STOPPED;
+  StreamSubscription _positionSubscription;
 
   PlayerProvider() {
     _radiosFetcher = List<RadioModel>();
+  }
+
+  void _initStreams() {
+    _radiosFetcher = List<RadioModel>();
+    if (_radioDetails == null) {
+      _radioDetails = RadioModel(id: 0);
+    }
+  }
+
+  void resetStreams() {
+    _initStreams();
+  }
+
+  void initAudioPlugin() {
+    if (_playerState == RadioPlayerState.STOPPED) {
+      _audioPlayer = new AudioPlayer();
+    } else {
+      _audioPlayer = getAudioPlayer();
+    }
+  }
+
+  setAudioPlayer(RadioModel radio) async {
+    _radioDetails = radio;
+
+    await initAudioPlugin();
+    notifyListeners();
+  }
+
+  initAudioPlayer() async {
+    updatePlayerState(RadioPlayerState.LOADING);
+    _positionSubscription =
+        _audioPlayer.onAudioPositionChanged.listen((Duration p) {
+      if (_playerState == RadioPlayerState.LOADING && p.inMilliseconds > 0) {
+        updatePlayerState(RadioPlayerState.PLAYING);
+      }
+
+      notifyListeners();
+    });
+    _audioPlayer.onPlayerStateChanged.listen((AudioPlayerState state) async {
+      print("Flutter : state : " + state.toString());
+      if (state == AudioPlayerState.PLAYING) {
+        //updatePlayerState(RadioPlayerState.PLAYING);
+        //notifyListeners();
+      } else if (state == AudioPlayerState.STOPPED ||
+          state == AudioPlayerState.COMPLETED) {
+        updatePlayerState(RadioPlayerState.STOPPED);
+        notifyListeners();
+      }
+    });
+  }
+
+  playRadio() async {
+    await _audioPlayer.play(currentRadio.radioURL, stayAwake: true);
+  }
+
+  stopRadio() async {
+    if (_audioPlayer != null) {
+      _positionSubscription?.cancel();
+      updatePlayerState(RadioPlayerState.STOPPED);
+      await _audioPlayer.stop();
+    }
+  }
+
+  bool isPlaying() {
+    return getPlayerState() == RadioPlayerState.PLAYING;
+  }
+
+  bool isLoading() {
+    return getPlayerState() == RadioPlayerState.LOADING;
+  }
+
+  bool isStopped() {
+    return getPlayerState() == RadioPlayerState.STOPPED;
   }
 
   fetchAllRadios(
       {String searchQuery = "", bool isFavouriteOnly = false}) async {
     _radiosFetcher = await DBDownloadService.fetchLocalDB(
         searchQuery: searchQuery, isFavouriteOnly: isFavouriteOnly);
+    notifyListeners();
+  }
+
+  void updatePlayerState(RadioPlayerState state) {
+    _playerState = state;
     notifyListeners();
   }
 
@@ -42,10 +127,6 @@ class PlayerProvider with ChangeNotifier {
     fetchAllRadios(isFavouriteOnly: isFavouriteOnly);
   }
 
-  void updatePlayerState(RadioPlayerState state) {
-    _playerState = state;
-    notifyListeners();
-  }
 /*
   static Future<RadioAPIModel> fetchAllRadios() async {
     final serviceResponse =
